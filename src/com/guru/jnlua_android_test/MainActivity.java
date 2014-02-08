@@ -3,17 +3,17 @@ package com.guru.jnlua_android_test;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.app.Activity;
+import android.content.res.AssetManager;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.widget.TextView;
+
 import com.naef.jnlua.LuaRuntimeException;
 import com.naef.jnlua.LuaState;
 import com.naef.jnlua.LuaType;
 import com.naef.jnlua.NamedJavaFunction;
-
-import android.os.Bundle;
-import android.app.Activity;
-import android.content.res.AssetManager;
-import android.util.Log;
-import android.view.Menu;
-import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "LuaTest";
@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
 			luaState.openLibs();
 			// Register the module
 			luaState.register("simple",
-					new NamedJavaFunction[] { new Divide() }, true);
+					new NamedJavaFunction[] { new Divide(), new DebugLog() }, true);
 
 			// Set a field 'VERSION' with the value 1
 			luaState.pushInteger(1);
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
 		int top = luaState.getTop();
 		for (i = 1; i <= top; i++) {
 			LuaType t = luaState.type(i);
-			Log.d(TAG, t.displayText());
+			//Log.d(TAG, t.displayText());
 		}
 	}
 
@@ -88,7 +88,24 @@ public class MainActivity extends Activity {
 	}
 
 }
+class DebugLog implements NamedJavaFunction {
+	@Override
+	public int invoke(LuaState luaState) {
+		// Get arguments using the check APIs; these throw exceptions with
+		// meaningful error messages if there is a mismatch
+		String msg = luaState.checkString(2);
+		String TAG = luaState.checkString(1);
 
+		Log.d(TAG,msg);
+		
+		return 0;
+	}
+
+	@Override
+	public String getName() {
+		return "log";
+	}
+}
 class Divide implements NamedJavaFunction {
 	@Override
 	public int invoke(LuaState luaState) {
